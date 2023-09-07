@@ -39,8 +39,14 @@ app.get('/vegetables', (req, res) => {
 // New
 app.get('/fruits/new', (req, res) => {
   console.log('New controller');
-  res.render('fruits/New');
+  res.render('fruits/Index', {fruits});
 });
+
+app.get('/vegetables/new', (req, res) => {
+  console.log('New Index');
+  res.render('vegetables/new', {vegetables});
+});
+
 
 // Delete
 
@@ -56,6 +62,14 @@ console.log(fruits)
   res.redirect('/fruits') // sends the user back to /fruits
 });
 
+app.post('/vegetables', (req, res) => {
+  //   console.log(req.body);
+  req.body.readyToEat = req.body.readyToEat === "on"
+  
+  vegetables.push(req.body)
+  console.log(vegetables)
+    res.redirect('/vegetables') // sends the user back to /vegetables
+  });
 // Edit
 
 // Show
@@ -74,6 +88,8 @@ app.get('/vegetables/:id', (req, res) => {
     vegetables: vegetables[req.params.id],
   });
 });
+
+
 
 
 app.listen(PORT, () => {
