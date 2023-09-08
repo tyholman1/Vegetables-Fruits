@@ -12,7 +12,7 @@ class New extends React.Component {
           Color: <input type="text" name="color" /> <br />
           Is Ready To Eat: <input type="checkbox" name="readyToEat" /> <br />
           Where's My Pun: <input type="text" name= "puns"/><br/>
-          Image URL: <input type="text" name="image" />
+          Image URL: <input type="text" name="img" />
           <input type="submit" value="Create Vegetables" />
         </form>
         <nav>

@@ -1,8 +1,20 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
-const fruits = require('./models/fruits');
-const vegetables = require ('./models/vegetables')
+const Fruit = require('./models/fruit');
+const Vegetable = require('./models/vegetable')
+const mongoose = require('mongoose');
+
+//// Database Connection
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+mongoose.connection.once('open', () => {
+  console.log('connected to mongo');
+});
+//////////////////////////
 
 const jsxViewEngine = require('jsx-view-engine');
 
@@ -11,10 +23,10 @@ app.set('views', './views');
 app.engine('jsx', jsxViewEngine());
 
 // Middleware;
-app.use((req, res, next) => {
-  console.log('Middleware: I run for all routes, 1');
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log('Middleware: I run for all routes, 1');
+//   next();
+// });
 // By implementing the line below, we now have access to the req.body. Which is the parsed formData from the form request.
 app.use(express.urlencoded({ extended: false }));
 
@@ -24,73 +36,105 @@ app.use(express.urlencoded({ extended: false }));
 // };
 
 // Index
-app.get('/fruits', (req, res) => {
-  console.log('Index controller');
-  res.render('fruits/Index', { fruits });
+app.get('/fruits', async (req, res) => {
+  try {
+    const foundFruits = await Fruit.find({});
+    console.log(foundFruits);
+    res.status(200).render('fruits/Index', {
+      fruits: foundFruits,
+    });
+  } catch (err) {
+    res.status(400).send(err);
+  }
 });
 
-//Vegetables Index
-app.get('/vegetables', (req, res) => {
-  // console.log('Index controller');
-  res.render('vegetables/Index', { vegetables });
+app.get('/vegetables', async (req, res) => {
+  try {
+    const foundVegetable = await Vegetable.find({});
+    // console.log(foundVegetable);
+    res.status(200).render('vegetables/Index', {
+      vegetables: foundVegetable,
+    });
+  } catch (err) {
+    res.status(400).send(err);
+  }
 });
-
 
 // New
 app.get('/fruits/new', (req, res) => {
   console.log('New controller');
-  res.render('fruits/Index', {fruits});
+  res.render('fruits/New');
 });
 
 app.get('/vegetables/new', (req, res) => {
-  console.log('New Index');
-  res.render('vegetables/new', {vegetables});
+  console.log('New controller');
+  res.render('vegetables/New');
 });
-
 
 // Delete
 
 // Update
 
 // Create
-app.post('/fruits', (req, res) => {
-//   console.log(req.body);
-req.body.readyToEat = req.body.readyToEat === "on"
+app.post('/fruits', async (req, res) => {
+  try {
+    // if(req.body.readyToEat === 'on'){ //if checked, req.body.readyToEat is set to 'on'
+    //   req.body.readyToEat = true; //do some data correction
+    // } else { //if not checked, req.body.readyToEat is undefined
+    //   req.body.readyToEat = false; //do some data correction
+    // }
+    req.body.readyToEat = req.body.readyToEat === 'on';
 
-fruits.push(req.body)
-console.log(fruits)
-  res.redirect('/fruits') // sends the user back to /fruits
+    const createdFruit = await Fruit.create(req.body);
+
+    res.status(201).redirect('/fruits');
+  } catch (err) {
+    res.status(400).send(err);
+  }
 });
 
-app.post('/vegetables', (req, res) => {
-  //   console.log(req.body);
-  req.body.readyToEat = req.body.readyToEat === "on"
-  
-  vegetables.push(req.body)
-  console.log(vegetables)
-    res.redirect('/vegetables') // sends the user back to /vegetables
-  });
+app.post('/vegetables', async (req, res) => {
+  try {
+    req.body.readyToEat = req.body.readyToEat === 'on';
+
+    const createdVegetable = await Vegetable.create(req.body);
+
+    res.status(201).redirect('/vegetables');
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
 // Edit
 
 // Show
-app.get('/fruits/:id', (req, res) => {
-  //second param of the render method must be an object
-  res.render('fruits/Show', {
-    //there will be a variable available inside the jsx file called fruit, its value is fruits[req.params.indexOfFruitsArray]
-    fruit: fruits[req.params.id],
-  });
+app.get('/fruits/:id', async (req, res) => {
+  try {
+    const foundFruit = await Fruit.findById(req.params.id);
+
+    //second param of the render method must be an object
+    res.render('fruits/Show', {
+      //there will be a variable available inside the jsx file called fruit, its value is fruits[req.params.indexOfFruitsArray]
+      fruit: foundFruit,
+    });
+  } catch (err) {
+    res.status(400).send(err);
+  }
 });
 
-app.get('/vegetables/:id', (req, res) => {
-  //second param of the render method must be an object
-  res.render('vegetables/Show', {
-    //there will be a variable available inside the jsx file called fruit, its value is fruits[req.params.indexOfFruitsArray]
-    vegetables: vegetables[req.params.id],
-  });
+app.get('/vegetables/:id', async (req, res) => {
+  try {
+    const foundVegetable = await Vegetable.findById(req.params.id);
+
+    //second param of the render method must be an object
+    res.render('vegetables/Show', {
+      //there will be a variable available inside the jsx file called fruit, its value is fruits[req.params.indexOfFruitsArray]
+      vegetables: foundVegetable,
+    });
+  } catch (err) {
+    res.status(400).send(err);
+  }
 });
-
-
-
 
 app.listen(PORT, () => {
   console.log(`Listening on port: ${PORT}`);

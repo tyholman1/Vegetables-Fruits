@@ -8,7 +8,7 @@ class Show extends React.Component {
         <h1>Show Veggies Page</h1>
         The {vegetables.name} is {vegetables.color}.
         And {vegetables.puns}
-        <img src={vegetables.image} alt=""/>
+        <img src={vegetables.img} alt=""/>
      </div>
      );
     }
